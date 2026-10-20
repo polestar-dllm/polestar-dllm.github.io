@@ -1,0 +1,11 @@
+Polestar paper: https://arxiv.org/pdf/2607.14107
+method.png: original Figure 5
+tradeoff.png: original Figure 1 retained as a reference
+Inline tradeoff SVG: Figure 1 marker geometry and annotation coordinates, rendered as theme-aware vector elements
+tradeoff-fonts: subset DejaVu Sans and Liberation Serif; licenses in tradeoff-fonts/LICENSES.txt
+results.svg / results.png: Table 1, generation length 256
+results-data.json: original published source data
+benchmark-example.png: MathVista testmini, problem 1 (source: SciBench)
+Dataset source: https://huggingface.co/datasets/AI4Math/MathVista/viewer/default/testmini?row=0
+Dataset license information: https://huggingface.co/datasets/AI4Math/MathVista#license
+The retained paper and benchmark image files preserve their source bytes.

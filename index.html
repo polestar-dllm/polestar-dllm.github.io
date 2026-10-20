@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Polestar uses representation drift to connect sparse KV-cache calibration and early token commitment in diffusion LLMs. NeurIPS 2026.">
+  <title>Polestar · Drift-aware inference for diffusion LLMs</title>
+  <link rel="icon" href="assets/star.svg" type="image/svg+xml">
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="results-explorer.css">
+  <link rel="stylesheet" href="generation-comparison.css">
+  <link rel="stylesheet" href="hero-intro.css">
+  <link rel="stylesheet" href="tradeoff.css">
+  <script src="site-data.js" defer></script>
+  <script src="walkthrough.js" defer></script>
+  <script src="results-explorer.js" defer></script>
+  <script src="generation-comparison.js" defer></script>
+  <script src="hero-intro.js" defer></script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="wordmark" href="#top" aria-label="Polestar, back to top"><img src="assets/star.svg" alt="">Polestar</a>
+  <div class="header-actions"><nav aria-label="Main navigation"><a href="#generation">Demo</a><a href="#insight">Insight</a><a href="#walkthrough">Method</a><a href="#results">Results</a><a href="#examples">Examples</a><a href="https://github.com/gt-synergy-lab/Polestar" class="nav-code">Code <span aria-hidden="true">↗</span></a></nav><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false"></button></div>
+</header>
+<main id="main">
+<section class="hero section-shell" id="top">
+  <p class="venue" data-hero-stream="venue"><span class="venue-dot"></span> NeurIPS 2026 <span class="venue-divider">/</span> Training-free inference</p>
+  <h1 data-hero-stream="polestar">Polestar<span class="hero-star" aria-hidden="true">✦</span></h1>
+  <p class="paper-title" data-hero-stream="title">Drift-Aware Cache Calibration and Token Commitment<br class="desktop-break"> for Efficient Inference of Diffusion LLMs</p>
+  <p class="authors"><a data-hero-stream="author-mingyu" data-hero-atomic="true" href="https://mlee864.github.io/" target="_blank" rel="noopener noreferrer">Mingyu Lee<sup>1,*</sup></a><span>·</span><a data-hero-stream="author-akshat" data-hero-atomic="true" href="https://akshatramachandran.github.io/" target="_blank" rel="noopener noreferrer">Akshat Ramachandran<sup>1,*</sup></a><span>·</span><a data-hero-stream="author-souvik" data-hero-atomic="true" href="https://ksouvik52.github.io/" target="_blank" rel="noopener noreferrer">Souvik Kundu<sup>2</sup></a><span>·</span><a data-hero-stream="author-tushar" data-hero-atomic="true" href="https://tushar-krishna.github.io/" target="_blank" rel="noopener noreferrer">Tushar Krishna<sup>1</sup></a></p>
+  <p class="affiliations" data-hero-stream="affiliations"><sup>1</sup> Georgia Institute of Technology <span>·</span> <sup>2</sup> Intel AI Group</p>
+  <p class="equal-contribution" data-hero-stream="contribution">* Equal contribution</p>
+  <div class="hero-actions"><a data-hero-stream="action-code" data-hero-atomic="true" class="button primary" href="https://github.com/gt-synergy-lab/Polestar"><span aria-hidden="true">&lt;/&gt;</span> Code</a><a data-hero-stream="action-paper" data-hero-atomic="true" class="button" href="https://arxiv.org/pdf/2607.14107"><span aria-hidden="true">↗</span> Paper</a><a data-hero-stream="action-demo" data-hero-atomic="true" class="button text-button" href="#generation">Watch comparison <span aria-hidden="true">↓</span></a></div>
+  <p class="hero-lead" data-hero-stream="lead">Representation drift becomes a shared signal for<br class="desktop-break"> <strong>selective cache calibration</strong> and <strong>early token commitment</strong>.</p>
+  <div class="headline-metrics" aria-label="Paper headline results">
+    <div><p class="metric-qualifier" data-hero-stream="throughput-metric-qualifier">Up to</p><p class="metric-value" data-hero-stream="throughput-metric-value">3.7<span>×</span></p><p class="metric-label" data-hero-stream="throughput-metric-label">higher throughput</p></div>
+    <div><p class="metric-qualifier" data-hero-stream="accuracy-metric-qualifier">Up to</p><p class="metric-value" data-hero-stream="accuracy-metric-value">+10.73<span>pts</span></p><p class="metric-label" data-hero-stream="accuracy-metric-label">accuracy improvement</p></div>
+    <div><p class="metric-qualifier" data-hero-stream="parallelism-metric-qualifier">Reaching</p><p class="metric-value" data-hero-stream="parallelism-metric-value">3.67</p><p class="metric-label" data-hero-stream="parallelism-metric-label">tokens per forward pass</p></div>
+  </div>
+  <p class="metric-context"><span data-hero-stream="metric-context">Reported across the paper’s mathematics and coding benchmarks. Accuracy gains are in percentage points. </span><a data-hero-stream="action-results" data-hero-atomic="true" href="#results">See results <span aria-hidden="true">↓</span></a></p>
+  <button class="hero-intro-control" type="button" id="replay-hero-intro" aria-label="Replay title animation" hidden><span aria-hidden="true">↻</span> Replay intro</button>
+</section>
+
+<section class="generation-section section-shell" id="generation" aria-labelledby="generation-title">
+  <div class="section-heading"><h2 id="generation-title">Generation comparison</h2><p>Compare Baseline, Fast-dLLM, and Polestar on the same prompt.</p></div>
+  <div class="generation-comparison" data-generation-comparison>
+  <div class="gc-toolbar">
+    <div class="gc-example-options" role="group" aria-label="Generation comparison example"></div>
+    <span class="gc-context"></span>
+  </div>
+  <p class="gc-scope"><strong>Illustrative responses;</strong> paper metrics and adjustable Replay TPS are shown separately.</p>
+  <p class="gc-display-source"></p>
+  <div class="gc-prompt-block">
+    <p class="gc-label">Shared prompt</p>
+    <pre class="gc-prompt"></pre>
+  </div>
+  <div class="gc-controls">
+    <div class="gc-transport">
+      <button class="control-button play-button gc-play" type="button">▶ Play comparison</button>
+      <button class="control-button gc-reset" type="button">↺ Reset</button>
+      <button class="control-button gc-show" type="button">Show completed</button>
+    </div>
+    <div class="gc-rate-presets">
+      <button class="control-button gc-paper-rates" type="button" aria-pressed="true">Paper rates</button>
+      <button class="control-button gc-fast-preview" type="button" aria-pressed="false">Fast preview · 2×</button>
+    </div>
+    <p class="gc-playback-status" aria-live="polite">Ready to replay</p>
+  </div>
+  <div class="gc-race-summary" aria-label="Replay progress across all three methods"></div>
+  <p class="gc-replay-key"><span><i class="gc-key-commit" aria-hidden="true"></i>Current-block commit</span><span><i class="gc-key-suffix" aria-hidden="true">◇</i>Polestar suffix commit</span><span>Separated positions can commit together.</span></p>
+  <div class="gc-lanes"></div>
+  <p class="gc-footnote">Authored examples, not recordings of a three-method run. Paper metrics are benchmark averages from the <a href="https://arxiv.org/pdf/2607.14107" target="_blank" rel="noopener">paper</a>; Replay TPS controls tokenizer-token timing. Current and suffix commits share one total commit budget. Refresh selections and commit groups are schematic, without measured drift or confidence values.</p>
+</div>
+
+</section>
+
+<section class="insight section-shell" id="insight">
+  <div class="section-heading"><p class="eyebrow">The observation</p><h2>The context changes.<br>So do the representations.</h2></div>
+  <div class="insight-layout"><div class="insight-copy"><p>Diffusion LLMs refine a masked response with bidirectional attention. Revealing a new token changes the context available to other positions—even when those tokens stay fixed.</p><p>Polestar treats this <strong>representation drift</strong> as useful information: it reveals where cached states need calibration and helps identify predictions ready for commitment.</p></div>
+  <div class="insight-illustration" aria-label="Illustrative contextual change: revealing May changes representations at related positions such as April">
+    <p class="diagram-caption">A new token reshapes its context.</p>
+    <div class="semantic-tokens"><span>48</span><span class="related">April</span><span>clips</span><span class="new-token">May <i>✓</i></span></div>
+    <svg viewBox="0 0 420 82" aria-hidden="true"><path d="M350 5 C350 54 140 64 140 12" fill="none" stroke="#76b900" stroke-width="2.4"/><path d="m133 19 7-9 7 9" fill="none" stroke="#76b900" stroke-width="2.4"/><circle cx="350" cy="5" r="4" fill="#76b900"/><text x="235" y="76" text-anchor="middle">contextual adaptation</text></svg>
+    <p class="illustration-note">Inspired by the paper’s motivating example.</p>
+  </div></div>
+  <div class="two-decisions"><div><span class="decision-name">Polestar-Cache</span><h3>Where should the cache be updated?</h3><p>Rank the drift of cluster-level attention proxies and selectively refresh the relevant cached representations.</p></div><div><span class="decision-name">Polestar-Commit</span><h3>Which tokens are ready to commit?</h3><p>Combine current-token drift relative to recent history with confidence to increase decoding parallelism.</p></div></div>
+</section>
+
+<section class="walkthrough-section" id="walkthrough"><div class="section-shell">
+  <div class="section-heading centered"><p class="eyebrow">Interactive explanation</p><h2>Follow the signal.</h2><p>See how a sparse refresh step connects cache calibration and token commitment.</p></div>
+  <div class="walkthrough" id="demo">
+    <div class="demo-heading"><p><span class="demo-label">Polestar / method walkthrough</span><span class="demo-scope">Illustrative walkthrough of the paper’s method. Token positions are schematic.</span></p><button class="icon-button" id="reset-demo" aria-label="Reset walkthrough" title="Reset">↺</button></div>
+    <div class="demo-body"><div class="demo-scene"><svg id="demo-svg" viewBox="0 0 800 550" role="img" aria-labelledby="demo-svg-title demo-svg-description"><title id="demo-svg-title">Polestar method walkthrough</title><desc id="demo-svg-description">Cached context and a recomputed current block.</desc></svg><div class="scene-legend"><span><i class="legend-mask"></i>Masked</span><span><i class="legend-prefix"></i>Cached context</span><span><i class="legend-update" aria-hidden="true">↑</i>Selected / updated</span><span><i class="legend-committed" aria-hidden="true">✓</i>Committed</span></div></div>
+    <div class="demo-explanation" aria-live="polite" aria-atomic="true"><p class="stage-meta"><span id="phase-label">Context</span><span id="stage-count">Stage 1 / 8</span></p><h3 id="stage-title">Reuse context. Recompute the block.</h3><p id="stage-summary"></p><ul id="stage-details"></ul></div></div>
+    <div class="demo-controls"><div class="transport"><button class="control-button" id="previous-stage" aria-label="Previous stage">← <span>Previous</span></button><button class="control-button play-button" id="play-demo" aria-label="Play walkthrough">▶ <span>Play</span></button><button class="control-button" id="next-stage" aria-label="Next stage"><span>Next</span> →</button></div><label class="demo-speed">Speed<select id="demo-speed" aria-label="Walkthrough playback speed"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2" selected>2×</option></select></label><label class="stage-slider"><span class="sr-only">Walkthrough stage</span><input type="range" id="stage-range" min="0" max="7" step="1" value="0" aria-label="Walkthrough stage"></label></div>
+    <div class="stage-navigation" id="stage-navigation" aria-label="Choose a walkthrough stage"></div>
+  </div>
+  <p class="demo-note">Sparse refresh follows decoding progress. Drift prioritizes the update locations.</p>
+  <details class="method-detail" id="method-figure">
+  <summary>The complete method</summary>
+  <div class="method-detail-content">
+  <div class="section-heading centered"><h3>Polestar-Cache &amp; Polestar-Commit</h3><p>Connect the walkthrough to the original diagram.</p></div>
+  <div class="figure-toolbar"><div class="segmented" aria-label="Highlight a method region"><button class="selected" data-method-region="all" aria-pressed="true">Full method</button><button data-method-region="cache" aria-pressed="false">Cache</button><button data-method-region="commit" aria-pressed="false">Commit</button></div><button class="small-button" data-enlarge="method">Enlarge <span aria-hidden="true">↗</span></button></div>
+  <div class="original-method" id="original-method"><img src="assets/method.png" alt="Original Polestar paper diagram: cluster summaries and sparse layer updates for Polestar-Cache; current and suffix token commitment for Polestar-Commit" width="1600" height="736" loading="lazy"><div id="method-highlights" aria-hidden="true"></div></div>
+  <p class="figure-caption">Polestar-Cache and Polestar-Commit.</p><p class="method-focus-label" id="method-focus-label">The full diagram from the paper.</p>
+  </div>
+  </details>
+</div></section>
+
+<section class="results section-shell" id="results">
+  <div class="section-heading"><p class="eyebrow">Results</p><h2>Accuracy and throughput,<br>together.</h2><p>Mathematics, code, and vision-language reasoning.</p></div>
+  <div class="teaser-layout"><figure><button class="figure-button" data-enlarge="teaser" aria-label="Enlarge accuracy-throughput figure"><svg class="tradeoff-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 454.852029 346.195552" role="img" aria-labelledby="tradeoff-title tradeoff-description">
+<title id="tradeoff-title">Accuracy–throughput trade-off</title>
+<desc id="tradeoff-description">The original paper comparison, redrawn as vectors. The horizontal axis is Tokens per Second (TPS), and the vertical axis is Accuracy (%). LLaDA, LLaDA+Parallel, Fast-dLLM, Adablock-dLLM, Dynamic-dLLM, DAWN, Elastic-Cache, and Polestar are shown. Polestar uses the green star; labels preserve the paper’s tokens-per-forward values.</desc>
+<defs><linearGradient id="tradeoff-direction-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="tradeoff-gradient-start"/><stop offset="1" class="tradeoff-gradient-end"/></linearGradient></defs>
+<g class="tradeoff-grid" aria-hidden="true">
+<path d="M145.849296 18.04398V288.51375"/>
+<path d="M230.189846 18.04398V288.51375"/>
+<path d="M314.530397 18.04398V288.51375"/>
+<path d="M398.870947 18.04398V288.51375"/>
+<path d="M61.698702 77.494148H448.449513"/>
+<path d="M61.698702 137.134251H448.449513"/>
+<path d="M61.698702 197.154228H448.449513"/>
+<path d="M61.698702 256.794332H448.449513"/>
+</g>
+<path class="tradeoff-frame" d="M61.698702 18.04398H448.449513V288.51375H61.698702Z" aria-hidden="true"/>
+<g class="tradeoff-ticks" aria-hidden="true">
+<path d="M61.698702 288.51375v5.318226"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="171" y="822.37037" font-size="44.973545" transform="">0</text></g>
+<path d="M145.849296 288.51375v5.318226"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="378" y="822.37037" font-size="44.973545" transform="">20</text></g>
+<path d="M230.189846 288.51375v5.318226"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="599" y="822.37037" font-size="44.973545" transform="">40</text></g>
+<path d="M314.530397 288.51375v5.318226"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="822" y="822.37037" font-size="44.973545" transform="">60</text></g>
+<path d="M398.870947 288.51375v5.318226"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="1044" y="822.37037" font-size="44.973545" transform="">80</text></g>
+<path d="M61.698702 18.04398h-5.318773"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="98" y="64.37037" font-size="44.973545" transform="">80</text></g>
+<path d="M61.698702 77.494148h-5.318773"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="100" y="221.37037" font-size="44.973545" transform="">79</text></g>
+<path d="M61.698702 137.134251h-5.318773"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="100" y="378.37037" font-size="44.973545" transform="">78</text></g>
+<path d="M61.698702 197.154228h-5.318773"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="100" y="537" font-size="46.639232" transform="">77</text></g>
+<path d="M61.698702 256.794332h-5.318773"/>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="99" y="692.37037" font-size="44.973545" transform="">76</text></g>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="385.14876" y="887.68595" font-size="49.586777" transform="">Tokens per Second (TPS)</text></g>
+<g transform="matrix(0.379912 0 0 0.379873 -7.635308 0)"><text class="tradeoff-axis-text" x="66.675284" y="569" font-size="49.638056" transform="rotate(-90 66.675284 569)">Accuracy (%)</text></g>
+</g>
+<g class="tradeoff-point" data-method="LLaDA" data-tpf="1.00"><title>LLaDA, TPF=1.00</title>
+<ellipse class="tradeoff-marker" cx="87.152832" cy="59.83004" rx="8.737985" ry="8.737085" style="fill:#2b7eb8"/>
+</g>
+<g class="tradeoff-point" data-method="LLaDA+Parallel" data-tpf="2.95"><title>LLaDA+Parallel, TPF=2.95</title>
+<ellipse class="tradeoff-marker" cx="136.16153" cy="103.515467" rx="8.737985" ry="8.737085" style="fill:#ff851b"/>
+</g>
+<g class="tradeoff-point" data-method="Fast-dLLM" data-tpf="2.72"><title>Fast-dLLM, TPF=2.72</title>
+<ellipse class="tradeoff-marker" cx="263.812093" cy="149.480133" rx="8.737985" ry="8.737085" style="fill:#6a8ca3"/>
+</g>
+<g class="tradeoff-point" data-method="Adablock-dLLM" data-tpf="2.95"><title>Adablock-dLLM, TPF=2.95</title>
+<ellipse class="tradeoff-marker" cx="297.624295" cy="128.587103" rx="8.737985" ry="8.737085" style="fill:#996fc0"/>
+</g>
+<g class="tradeoff-point" data-method="Elastic-Cache" data-tpf="3.29"><title>Elastic-Cache, TPF=3.29</title>
+<ellipse class="tradeoff-marker" cx="369.427737" cy="217.097575" rx="8.737985" ry="8.737085" style="fill:#d83233"/>
+</g>
+<g class="tradeoff-point" data-method="DAWN" data-tpf="3.50"><title>DAWN, TPF=3.50</title>
+<ellipse class="tradeoff-marker" cx="250.515159" cy="141.122921" rx="8.737985" ry="8.737085" style="fill:#925f54"/>
+</g>
+<g class="tradeoff-point" data-method="Dynamic-dLLM" data-tpf="2.80"><title>Dynamic-dLLM, TPF=2.80</title>
+<ellipse class="tradeoff-marker" cx="237.598138" cy="136.944315" rx="8.737985" ry="8.737085" style="fill:#e47ec5"/>
+</g>
+<g class="tradeoff-point is-ours" data-method="Polestar" data-tpf="3.54"><title>Polestar, TPF=3.54</title>
+<polygon class="tradeoff-star" points="431.353456,99.083485 434.907469,110.020488 446.408499,110.020488 437.103971,116.779928 440.657984,127.716931 431.353456,120.957491 422.048927,127.716931 425.602941,116.779928 416.298412,110.020488 427.799442,110.020488"/>
+</g>
+<g class="tradeoff-annotations" aria-hidden="true">
+<path class="tradeoff-leader" d="M 203.151503 164.239481 L 205.921351 157.548735 L 206.820643 161.052376 L 210.16598 162.440897 L 203.151503 164.239481 Z" fill="var(--tradeoff-axis)" stroke="none" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 203.151503 164.239481 L 205.921351 157.548735 L 206.820643 161.052376 L 210.16598 162.440897 L 203.151503 164.239481 Z" fill="none" stroke="var(--tradeoff-axis)" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 241.957746 185.052685 L 240.1016 178.05259 L 242.94337 180.297222 L 246.439802 179.361966 L 241.957746 185.052685 Z" fill="var(--tradeoff-axis)" stroke="none" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 241.957746 185.052685 L 240.1016 178.05259 L 242.94337 180.297222 L 246.439802 179.361966 L 241.957746 185.052685 Z" fill="none" stroke="var(--tradeoff-axis)" stroke-width="0.42"/>
+<path class="tradeoff-direction" d="M 123.481445 281.780504 L 123.481445 267.147255 L 231.022349 267.147255 L 231.022349 259.593204 L 245.065706 274.46388 L 231.022349 289.334556 L 231.022349 281.780504 L 123.481445 281.780504 Z" fill="url(#tradeoff-direction-gradient)" stroke="none" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 123.481445 281.780504 L 123.481445 267.147255 L 231.022349 267.147255 L 231.022349 259.593204 L 245.065706 274.46388 L 231.022349 289.334556 L 231.022349 281.780504 L 123.481445 281.780504 Z" fill="none" stroke="var(--tradeoff-axis)" stroke-width="0.42"/>
+<path class="tradeoff-direction" d="M 84.891025 279.082628 L 70.250567 279.197767 L 69.696589 209.06736 L 62.142537 209.124922 L 76.898126 194.966478 L 91.883918 208.887502 L 84.329866 208.952265 L 84.891025 279.082628 Z" fill="url(#tradeoff-direction-gradient)" stroke="none" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 84.891025 279.082628 L 70.250567 279.197767 L 69.696589 209.06736 L 62.142537 209.124922 L 76.898126 194.966478 L 91.883918 208.887502 L 84.329866 208.952265 L 84.891025 279.082628 Z" fill="none" stroke="var(--tradeoff-axis)" stroke-width="0.42"/>
+<path class="tradeoff-leader" d="M 234.454062 137.052082 L 206.820643 161.052376" fill="none" stroke="var(--tradeoff-axis)" stroke-width="1.8"/>
+<path class="tradeoff-leader" d="M 251.001032 141.368683 L 242.94337 180.297222" fill="none" stroke="var(--tradeoff-axis)" stroke-width="1.8"/>
+</g>
+<g class="tradeoff-method-labels" aria-hidden="true">
+<text class="tradeoff-method-label" x="81.214736" y="41.007719" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="89.56445" y="41.007719" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="97.914165" y="41.007719" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="103.981223" y="41.007719" font-size="13.669236">D</text>
+<text class="tradeoff-method-label" x="113.852708" y="41.007719" font-size="13.669236">A</text>
+<text class="tradeoff-method-label" x="123.728759" y="44.458755" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="130.684571" y="44.458755" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="137.017641" y="44.458755" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="143.350711" y="44.458755" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="149.772744" y="44.458755" font-size="11.388632">1</text>
+<text class="tradeoff-method-label" x="155.466385" y="44.458755" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="158.313206" y="44.458755" font-size="11.388632">0</text>
+<text class="tradeoff-method-label" x="164.006848" y="44.458755" font-size="11.388632">0</text>
+<text class="tradeoff-method-label" x="63.678545" y="91.368064" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="72.028259" y="91.368064" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="80.377973" y="91.368064" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="86.445032" y="91.368064" font-size="13.669236">D</text>
+<text class="tradeoff-method-label" x="96.316516" y="91.368064" font-size="13.669236">A</text>
+<text class="tradeoff-method-label" x="106.188001" y="91.368064" font-size="13.669236">+</text>
+<text class="tradeoff-method-label" x="113.89697" y="91.368064" font-size="13.669236">P</text>
+<text class="tradeoff-method-label" x="121.499148" y="91.368064" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="127.566206" y="91.368064" font-size="13.669236">r</text>
+<text class="tradeoff-method-label" x="132.118169" y="91.368064" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="138.185227" y="91.368064" font-size="13.669236">l</text>
+<text class="tradeoff-method-label" x="141.982979" y="91.368064" font-size="13.669236">l</text>
+<text class="tradeoff-method-label" x="145.780731" y="91.368064" font-size="13.669236">e</text>
+<text class="tradeoff-method-label" x="151.847789" y="91.368064" font-size="13.669236">l</text>
+<text class="tradeoff-method-label" x="155.653621" y="94.8191" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="162.609433" y="94.8191" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="168.942502" y="94.8191" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="175.275572" y="94.8191" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="181.697605" y="94.8191" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="187.391247" y="94.8191" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="190.238068" y="94.8191" font-size="11.388632">9</text>
+<text class="tradeoff-method-label" x="195.931709" y="94.8191" font-size="11.388632">5</text>
+<text class="tradeoff-method-label" x="300.484577" y="243.887966" font-size="13.669236">E</text>
+<text class="tradeoff-method-label" x="308.834291" y="243.887966" font-size="13.669236">l</text>
+<text class="tradeoff-method-label" x="312.632043" y="243.887966" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="318.699101" y="243.887966" font-size="13.669236">s</text>
+<text class="tradeoff-method-label" x="324.018624" y="243.887966" font-size="13.669236">t</text>
+<text class="tradeoff-method-label" x="327.816375" y="243.887966" font-size="13.669236">i</text>
+<text class="tradeoff-method-label" x="331.614127" y="243.887966" font-size="13.669236">c</text>
+<text class="tradeoff-method-label" x="337.681186" y="243.887966" font-size="13.669236">-</text>
+<text class="tradeoff-method-label" x="342.233148" y="243.887966" font-size="13.669236">C</text>
+<text class="tradeoff-method-label" x="351.350422" y="243.887966" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="357.417481" y="243.887966" font-size="13.669236">c</text>
+<text class="tradeoff-method-label" x="363.484539" y="243.887966" font-size="13.669236">h</text>
+<text class="tradeoff-method-label" x="370.319158" y="243.887966" font-size="13.669236">e</text>
+<text class="tradeoff-method-label" x="376.396056" y="247.339002" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="383.351868" y="247.339002" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="389.684937" y="247.339002" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="396.018007" y="247.339002" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="402.44004" y="247.339002" font-size="11.388632">3</text>
+<text class="tradeoff-method-label" x="408.133682" y="247.339002" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="410.980503" y="247.339002" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="416.674144" y="247.339002" font-size="11.388632">9</text>
+<text class="tradeoff-method-label" x="275.990118" y="163.311414" font-size="13.669236">F</text>
+<text class="tradeoff-method-label" x="283.592296" y="163.311414" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="289.659355" y="163.311414" font-size="13.669236">s</text>
+<text class="tradeoff-method-label" x="294.978877" y="163.311414" font-size="13.669236">t</text>
+<text class="tradeoff-method-label" x="298.776629" y="163.311414" font-size="13.669236">-</text>
+<text class="tradeoff-method-label" x="303.328591" y="163.311414" font-size="13.669236">d</text>
+<text class="tradeoff-method-label" x="310.163209" y="163.311414" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="318.512923" y="163.311414" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="326.862638" y="163.311414" font-size="13.669236">M</text>
+<text class="tradeoff-method-label" x="339.019234" y="166.76245" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="345.975045" y="166.76245" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="352.308115" y="166.76245" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="358.641185" y="166.76245" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="365.063218" y="166.76245" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="370.75686" y="166.76245" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="373.603681" y="166.76245" font-size="11.388632">7</text>
+<text class="tradeoff-method-label" x="379.297322" y="166.76245" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="197.583104" y="200.721956" font-size="13.669236">D</text>
+<text class="tradeoff-method-label" x="207.454589" y="200.721956" font-size="13.669236">A</text>
+<text class="tradeoff-method-label" x="216.231467" y="200.721956" font-size="13.669236">W</text>
+<text class="tradeoff-method-label" x="229.133144" y="200.721956" font-size="13.669236">N</text>
+<text class="tradeoff-method-label" x="239.00674" y="204.172992" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="245.962552" y="204.172992" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="252.295621" y="204.172992" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="258.628691" y="204.172992" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="265.050724" y="204.172992" font-size="11.388632">3</text>
+<text class="tradeoff-method-label" x="270.744366" y="204.172992" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="273.591187" y="204.172992" font-size="11.388632">5</text>
+<text class="tradeoff-method-label" x="279.284828" y="204.172992" font-size="11.388632">0</text>
+<text class="tradeoff-method-label" x="71.682242" y="171.944616" font-size="13.669236">D</text>
+<text class="tradeoff-method-label" x="81.553727" y="171.944616" font-size="13.669236">y</text>
+<text class="tradeoff-method-label" x="88.388345" y="171.944616" font-size="13.669236">n</text>
+<text class="tradeoff-method-label" x="95.222963" y="171.944616" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="101.290022" y="171.944616" font-size="13.669236">m</text>
+<text class="tradeoff-method-label" x="111.922392" y="171.944616" font-size="13.669236">i</text>
+<text class="tradeoff-method-label" x="115.720144" y="171.944616" font-size="13.669236">c</text>
+<text class="tradeoff-method-label" x="121.787202" y="171.944616" font-size="13.669236">-</text>
+<text class="tradeoff-method-label" x="126.339165" y="171.944616" font-size="13.669236">d</text>
+<text class="tradeoff-method-label" x="133.173783" y="171.944616" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="141.523497" y="171.944616" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="149.873212" y="171.944616" font-size="13.669236">M</text>
+<text class="tradeoff-method-label" x="162.027356" y="175.395652" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="168.983167" y="175.395652" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="175.316237" y="175.395652" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="181.649307" y="175.395652" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="188.07134" y="175.395652" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="193.764982" y="175.395652" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="196.611802" y="175.395652" font-size="11.388632">8</text>
+<text class="tradeoff-method-label" x="202.305444" y="175.395652" font-size="11.388632">0</text>
+<text class="tradeoff-method-label" x="171.604814" y="115.10937" font-size="13.669236">A</text>
+<text class="tradeoff-method-label" x="181.476299" y="115.10937" font-size="13.669236">d</text>
+<text class="tradeoff-method-label" x="188.310917" y="115.10937" font-size="13.669236">a</text>
+<text class="tradeoff-method-label" x="194.377976" y="115.10937" font-size="13.669236">b</text>
+<text class="tradeoff-method-label" x="201.212594" y="115.10937" font-size="13.669236">l</text>
+<text class="tradeoff-method-label" x="205.010346" y="115.10937" font-size="13.669236">o</text>
+<text class="tradeoff-method-label" x="211.844964" y="115.10937" font-size="13.669236">c</text>
+<text class="tradeoff-method-label" x="217.912022" y="115.10937" font-size="13.669236">k</text>
+<text class="tradeoff-method-label" x="224.746641" y="115.10937" font-size="13.669236">-</text>
+<text class="tradeoff-method-label" x="229.305625" y="115.10937" font-size="13.669236">d</text>
+<text class="tradeoff-method-label" x="236.140243" y="115.10937" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="244.489958" y="115.10937" font-size="13.669236">L</text>
+<text class="tradeoff-method-label" x="252.839672" y="115.10937" font-size="13.669236">M</text>
+<text class="tradeoff-method-label" x="264.996275" y="118.560406" font-size="11.388632">T</text>
+<text class="tradeoff-method-label" x="271.952087" y="118.560406" font-size="11.388632">P</text>
+<text class="tradeoff-method-label" x="278.285157" y="118.560406" font-size="11.388632">F</text>
+<text class="tradeoff-method-label" x="284.618226" y="118.560406" font-size="11.388632">=</text>
+<text class="tradeoff-method-label" x="291.040259" y="118.560406" font-size="11.388632">2</text>
+<text class="tradeoff-method-label" x="296.733901" y="118.560406" font-size="11.388632">.</text>
+<text class="tradeoff-method-label" x="299.580722" y="118.560406" font-size="11.388632">9</text>
+<text class="tradeoff-method-label" x="305.274364" y="118.560406" font-size="11.388632">5</text>
+<text class="tradeoff-polestar-label" x="336.92838" y="91.368064" font-size="15.108103">P</text>
+<text class="tradeoff-polestar-label" x="346.157012" y="91.368064" font-size="15.108103">o</text>
+<text class="tradeoff-polestar-label" x="353.711063" y="91.368064" font-size="15.108103">l</text>
+<text class="tradeoff-polestar-label" x="357.908578" y="91.368064" font-size="15.108103">e</text>
+<text class="tradeoff-polestar-label" x="364.614275" y="91.368064" font-size="15.108103">s</text>
+<text class="tradeoff-polestar-label" x="370.493747" y="91.368064" font-size="15.108103">t</text>
+<text class="tradeoff-polestar-label" x="375.524863" y="91.368064" font-size="15.108103">a</text>
+<text class="tradeoff-polestar-label" x="383.078915" y="91.368064" font-size="15.108103">r</text>
+<text class="tradeoff-polestar-label" x="389.795505" y="95.100125" font-size="12.590086">T</text>
+<text class="tradeoff-polestar-label" x="398.192994" y="95.100125" font-size="12.590086">P</text>
+<text class="tradeoff-polestar-label" x="405.88352" y="95.100125" font-size="12.590086">F</text>
+<text class="tradeoff-polestar-label" x="413.574046" y="95.100125" font-size="12.590086">=</text>
+<text class="tradeoff-polestar-label" x="420.748182" y="95.100125" font-size="12.590086">3</text>
+<text class="tradeoff-polestar-label" x="427.043225" y="95.100125" font-size="12.590086">.</text>
+<text class="tradeoff-polestar-label" x="430.190747" y="95.100125" font-size="12.590086">5</text>
+<text class="tradeoff-polestar-label" x="436.48579" y="95.100125" font-size="12.590086">4</text>
+<text class="tradeoff-polestar-label" x="368.44856" y="113.670503" font-size="15.108103">(</text>
+<text class="tradeoff-polestar-label" x="373.479677" y="113.670503" font-size="15.108103">O</text>
+<text class="tradeoff-polestar-label" x="385.231243" y="113.670503" font-size="15.108103">u</text>
+<text class="tradeoff-polestar-label" x="393.63365" y="113.670503" font-size="15.108103">r</text>
+<text class="tradeoff-polestar-label" x="400.339347" y="113.670503" font-size="15.108103">s</text>
+<text class="tradeoff-polestar-label" x="406.218819" y="113.670503" font-size="15.108103">)</text>
+<text class="tradeoff-direction-label" x="117.737231" y="255.398902" font-size="15.108103">H</text>
+<text class="tradeoff-direction-label" x="129.488798" y="255.398902" font-size="15.108103">i</text>
+<text class="tradeoff-direction-label" x="133.686313" y="255.398902" font-size="15.108103">g</text>
+<text class="tradeoff-direction-label" x="141.240364" y="255.398902" font-size="15.108103">h</text>
+<text class="tradeoff-direction-label" x="149.642772" y="255.398902" font-size="15.108103">e</text>
+<text class="tradeoff-direction-label" x="156.348468" y="255.398902" font-size="15.108103">r</text>
+<text class="tradeoff-direction-label" x="162.781215" y="255.398902" font-size="15.108103"> </text>
+<text class="tradeoff-direction-label" x="166.558241" y="255.398902" font-size="15.108103">P</text>
+<text class="tradeoff-direction-label" x="175.786873" y="255.398902" font-size="15.108103">e</text>
+<text class="tradeoff-direction-label" x="182.492569" y="255.398902" font-size="15.108103">r</text>
+<text class="tradeoff-direction-label" x="189.198266" y="255.398902" font-size="15.108103">f</text>
+<text class="tradeoff-direction-label" x="194.229382" y="255.398902" font-size="15.108103">o</text>
+<text class="tradeoff-direction-label" x="201.783434" y="255.398902" font-size="15.108103">r</text>
+<text class="tradeoff-direction-label" x="208.48913" y="255.398902" font-size="15.108103">m</text>
+<text class="tradeoff-direction-label" x="221.074298" y="255.398902" font-size="15.108103">a</text>
+<text class="tradeoff-direction-label" x="228.62835" y="255.398902" font-size="15.108103">n</text>
+<text class="tradeoff-direction-label" x="237.030757" y="255.398902" font-size="15.108103">c</text>
+<text class="tradeoff-direction-label" x="243.736453" y="255.398902" font-size="15.108103">e</text>
+<text class="tradeoff-direction-label" x="101.179009" y="286.6268" font-size="15.108103" transform="rotate(-90 101.179009 286.6268)">M</text>
+<text class="tradeoff-direction-label" x="101.179009" y="272.367052" font-size="15.108103" transform="rotate(-90 101.179009 272.367052)">o</text>
+<text class="tradeoff-direction-label" x="101.179009" y="264.813" font-size="15.108103" transform="rotate(-90 101.179009 264.813)">r</text>
+<text class="tradeoff-direction-label" x="101.179009" y="258.380253" font-size="15.108103" transform="rotate(-90 101.179009 258.380253)">e</text>
+<text class="tradeoff-direction-label" x="101.179009" y="251.674556" font-size="15.108103" transform="rotate(-90 101.179009 251.674556)"> </text>
+<text class="tradeoff-direction-label" x="101.179009" y="248.731132" font-size="15.108103" transform="rotate(-90 101.179009 248.731132)">A</text>
+<text class="tradeoff-direction-label" x="101.179009" y="237.820544" font-size="15.108103" transform="rotate(-90 101.179009 237.820544)">c</text>
+<text class="tradeoff-direction-label" x="101.179009" y="231.114847" font-size="15.108103" transform="rotate(-90 101.179009 231.114847)">c</text>
+<text class="tradeoff-direction-label" x="101.179009" y="224.409151" font-size="15.108103" transform="rotate(-90 101.179009 224.409151)">u</text>
+<text class="tradeoff-direction-label" x="101.179009" y="216.006744" font-size="15.108103" transform="rotate(-90 101.179009 216.006744)">r</text>
+<text class="tradeoff-direction-label" x="101.179009" y="209.301047" font-size="15.108103" transform="rotate(-90 101.179009 209.301047)">a</text>
+<text class="tradeoff-direction-label" x="101.179009" y="201.746996" font-size="15.108103" transform="rotate(-90 101.179009 201.746996)">t</text>
+<text class="tradeoff-direction-label" x="101.179009" y="196.715879" font-size="15.108103" transform="rotate(-90 101.179009 196.715879)">e</text>
+</g>
+</svg>
+</button><figcaption>Accuracy–throughput trade-off.</figcaption></figure><div class="results-reading"><h3>A better accuracy–throughput frontier.</h3><p>Cache calibration and token commitment address two linked dimensions of diffusion inference: the quality of cached context and the number of tokens decoded per forward pass.</p><p>The paper evaluates Polestar across LLaDA, Dream, and LLaDA-V, using both mathematics and code benchmarks as well as visual reasoning tasks.</p><a class="inline-link" href="https://arxiv.org/pdf/2607.14107">Read the experiments <span aria-hidden="true">↗</span></a></div></div>
+  <div class="comparison-heading"><h3>Explore the results</h3><span>Choose a model and generation length. Compare all three benchmarks.</span></div>
+  <div class="results-explorer" id="results-explorer" aria-label="Explore paper benchmark results">
+  <div class="rex-controls">
+    <div class="rex-control-group"><span class="rex-control-label" id="rex-model-label">Model</span><div class="rex-segmented" id="rex-model-options" role="group" aria-labelledby="rex-model-label"></div></div>
+    <div class="rex-control-group"><span class="rex-control-label" id="rex-length-label">Generation length</span><div class="rex-segmented" id="rex-length-options" role="group" aria-labelledby="rex-length-label"></div></div>
+  </div>
+  <p class="rex-view-context" id="rex-view-context" aria-live="polite"></p>
+  <div class="rex-legend" aria-label="Chart legend"><span><i class="rex-legend-bar"></i>Accuracy</span><span><i class="rex-legend-line"></i>TPS</span><span><i class="rex-legend-polestar"></i>Polestar <b class="rex-legend-star" aria-hidden="true">★</b></span></div>
+  <p class="rex-help">Compare all three benchmarks. Select a method to highlight its measurements in the table.</p>
+  <div class="rex-benchmark-grid" id="rex-panels"></div>
+  <p class="rex-source">Paper measurements · NVIDIA A100 80GB · Batch size 1. <a href="assets/results-data.json">Source data</a></p>
+</div>
+
+  <details class="results-detail"><summary>Results across all four models</summary><div class="table-scroll"><table><thead><tr><th>Model</th><th>Benchmark</th><th>Accuracy (%)</th><th>TPF</th><th>TPS</th></tr></thead><tbody id="model-results"></tbody></table></div></details>
+</section>
+
+<section class="examples-section" id="examples"><div class="section-shell">
+  <div class="section-heading"><p class="eyebrow">Use Polestar</p><h2>Existing checkpoints.<br>No additional training.</h2><p>Run text and image-conditioned generation with the released model presets.</p></div>
+  <div class="model-list" id="model-list"></div>
+  <div class="examples"><div class="example-header"><h3>Examples</h3><div class="segmented" id="example-tabs" role="tablist" aria-label="Generation example"></div></div><div id="example-content" role="tabpanel"></div></div>
+  <div class="get-started"><div><h3>Try it on your own inputs.</h3><p>Install Polestar, choose a model preset, and generate.</p></div><div><a class="button primary" href="https://github.com/gt-synergy-lab/Polestar#quickstart">Quickstart ↗</a><a class="button" href="https://github.com/gt-synergy-lab/Polestar/blob/main/docs/evaluation.md">Evaluation ↗</a></div></div>
+</div></section>
+
+<section class="citation section-shell" id="citation"><div class="citation-heading"><div><p class="eyebrow">Citation</p><h2>Cite Polestar</h2></div><div class="citation-actions"><a class="small-button" href="assets/polestar.bib" download="polestar.bib">Download</a><button class="small-button" id="copy-citation">Copy BibTeX</button></div></div><pre><code id="bibtex"></code></pre><p id="copy-status" class="copy-status" role="status"></p></section>
+</main>
+<footer class="site-footer"><span class="wordmark"><img src="assets/star.svg" alt="">Polestar</span><p>NeurIPS 2026 <span>·</span> Georgia Institute of Technology <span>·</span> Intel AI Group</p><div><a href="https://arxiv.org/pdf/2607.14107">Paper</a><a href="https://github.com/gt-synergy-lab/Polestar">Code</a><a href="#citation">Citation</a></div></footer>
+<dialog id="figure-dialog" aria-labelledby="dialog-title"><div class="dialog-toolbar"><h2 id="dialog-title">Polestar method</h2><button class="icon-button" id="close-dialog" aria-label="Close enlarged figure">×</button></div><div class="dialog-image"><img id="dialog-img" src="assets/method.png" alt="Enlarged Polestar figure"></div><p id="dialog-caption"></p></dialog>
+</body></html>

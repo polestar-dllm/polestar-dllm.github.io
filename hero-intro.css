@@ -1,0 +1,21 @@
+.hero{position:relative}
+.authors a{color:var(--ink);text-decoration-line:underline;text-decoration-color:var(--muted);text-decoration-thickness:1px;text-underline-offset:3px;white-space:nowrap}
+.authors a:hover{color:var(--green-ink);text-decoration-color:var(--green-ink)}
+.hero-intro-control{position:absolute;right:40px;bottom:16px;display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:5px 7px;color:var(--muted);font-size:10px;line-height:1.5;border-radius:4px}
+.hero-intro-control[hidden]{display:none}
+.hero-intro-control:hover{color:var(--green-ink);background:var(--surface-soft)}
+.hero-visual{display:contents;color:inherit}
+.hero-text-run{color:inherit}
+.hero-accessible-copy{user-select:none}
+.hero-token{display:inline;vertical-align:baseline;color:inherit;background:transparent;box-shadow:none;border-radius:3px;transition:background .14s,box-shadow .14s}
+.hero-token[data-token-state="pending"]{opacity:0}
+.hero-token[data-token-state="committing"]{background:color-mix(in srgb,var(--green) 35%,var(--surface));box-shadow:none}
+.metric-value .hero-visual,.metric-value .hero-text-run,.metric-value .hero-token{font-size:inherit;line-height:inherit;letter-spacing:inherit;margin:0;color:inherit}
+.authors .hero-visual,.authors .hero-text-run,.authors .hero-token,.authors .hero-accessible-copy{margin:0;color:inherit}
+.affiliations .hero-visual,.affiliations .hero-text-run,.affiliations .hero-token,.affiliations .hero-accessible-copy{margin:0}
+.authors a[data-hero-visible="false"]{text-decoration-color:transparent}
+.hero-star{transform-origin:center center}
+.hero[data-intro-star="twinkling"] .hero-star{animation:hero-star-finish 620ms ease-out both}
+@keyframes hero-star-finish{0%{transform:scale(1) rotate(0deg);filter:brightness(1) drop-shadow(0 0 0 transparent)}24%{transform:scale(1.4) rotate(-9deg);filter:brightness(1.65) drop-shadow(0 0 .45em color-mix(in srgb,var(--green) 70%,transparent))}45%{transform:scale(1.15) rotate(6deg);filter:brightness(1.18) drop-shadow(0 0 .16em color-mix(in srgb,var(--green) 45%,transparent))}72%{transform:scale(1.01) rotate(-1deg);filter:brightness(1.04) drop-shadow(0 0 .05em color-mix(in srgb,var(--green) 15%,transparent))}100%{transform:scale(1) rotate(0deg);filter:brightness(1) drop-shadow(0 0 0 transparent)}}
+@media(max-width:760px){.hero-intro-control{right:22px;bottom:10px}}
+@media(prefers-reduced-motion:reduce){.hero-intro-control{display:none!important}.hero-token{opacity:1!important;background:transparent!important;box-shadow:none!important;transition:none}.hero[data-intro-star="twinkling"] .hero-star{animation:none!important}}

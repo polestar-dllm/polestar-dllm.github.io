@@ -1,0 +1,20 @@
+@font-face{font-family:"Polestar Figure Axis";src:url("assets/tradeoff-fonts/axis.woff") format("woff");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Polestar Figure Serif";src:url("assets/tradeoff-fonts/serif.woff") format("woff");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Polestar Figure Serif";src:url("assets/tradeoff-fonts/serif-bold.woff") format("woff");font-style:normal;font-weight:700;font-display:swap}
+.tradeoff-svg{--tradeoff-axis:var(--ink);--tradeoff-grid:#c5cbd0;--tradeoff-direction:#da3c40;--tradeoff-direction-label:#ce3036;display:block;width:100%;height:auto;overflow:visible;background:transparent}
+.teaser-layout figure{width:100%}
+:root[data-theme="dark"] .tradeoff-svg{--tradeoff-grid:#3c4b52;--tradeoff-direction:#dd6668;--tradeoff-direction-label:#ee8a8d}
+.tradeoff-grid path{fill:none;stroke:var(--tradeoff-grid);stroke-width:.65;stroke-dasharray:3 1.8}
+.tradeoff-frame,.tradeoff-ticks>path{fill:none;stroke:var(--tradeoff-axis);stroke-width:1.05}
+.tradeoff-axis-text{font-family:"Polestar Figure Axis",Arial,sans-serif;font-weight:400;fill:var(--tradeoff-axis)}
+.tradeoff-marker{stroke:var(--tradeoff-axis);stroke-width:1.05}
+.tradeoff-star{fill:#76b900;stroke:var(--tradeoff-axis);stroke-width:1.9;stroke-linejoin:round}
+.tradeoff-method-label,.tradeoff-polestar-label,.tradeoff-direction-label{font-family:"Polestar Figure Serif","Times New Roman",serif;font-weight:400;fill:var(--ink)}
+.tradeoff-polestar-label{font-weight:700;fill:var(--green-ink)}
+.tradeoff-direction-label{font-weight:700;fill:var(--tradeoff-direction-label)}
+.tradeoff-gradient-start{stop-color:var(--tradeoff-direction);stop-opacity:1}
+.tradeoff-gradient-end{stop-color:var(--tradeoff-direction);stop-opacity:0}
+.dialog-image[data-kind="teaser"]{background:var(--page-bg);padding:24px}
+.dialog-image[data-kind="teaser"] .tradeoff-svg{width:100%;min-width:600px;max-width:1100px;margin:auto}
+.dialog-image img[hidden]{display:none}
+@media(max-width:760px){.dialog-image[data-kind="teaser"]{padding:16px;overflow:auto}}
