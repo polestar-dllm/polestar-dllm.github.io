@@ -38,3 +38,4 @@ body{background:var(--page-bg)}a:hover{color:var(--green-ink)}
 
 .generation-section{padding-top:32px;padding-bottom:64px}.generation-section .section-heading{margin-bottom:24px}.generation-section .section-heading>p:last-child{font-size:15px;margin-top:12px}.generation-section .generation-comparison{margin:0}
 @media(max-width:760px){.generation-section{padding-top:12px;padding-bottom:48px}.generation-section h2{font-size:30px}.generation-section .section-heading>p:last-child{font-size:14px}}
+@media(max-width:360px){.site-header{padding-inline:14px;gap:10px}.site-header .wordmark{flex-shrink:0;font-size:19px;gap:6px}.site-header .wordmark img{width:19px;height:19px}.site-header nav{font-size:11px;gap:9px}.header-actions{gap:8px}}

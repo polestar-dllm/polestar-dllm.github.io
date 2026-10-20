@@ -1,13 +1,15 @@
 # Polestar research website
 
-This folder contains the local review draft. No deployment or push is performed by the build script.
+[Website](https://polestar-dllm.github.io/) · [Paper](https://arxiv.org/pdf/2607.14107) · [Code](https://github.com/gt-synergy-lab/Polestar)
 
-Open the self-contained preview, or serve this folder with:
+The Polestar research website, with an interactive method walkthrough, generation comparison, and benchmark explorer.
+
+## Local preview
+
+The site uses static HTML, CSS, JavaScript, and local assets. No package installation is needed.
 
 ```sh
-python -m http.server 8000
+python3 -m http.server 8000
 ```
 
-The site uses local HTML, CSS, JavaScript, SVG, and paper assets. It needs no package installation. The walkthrough illustrates the method. The generation comparison uses authored illustrative responses, with timing and cadence calibrated to paper benchmark averages. Text examples show recorded model outputs. The vision panel shows an authentic MathVista input and benchmark reference answer.
-
-Paper-asset provenance is in `assets/SOURCES.txt`.
+Open `http://localhost:8000`. Asset provenance is recorded in `assets/SOURCES.txt`.
